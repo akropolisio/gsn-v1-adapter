@@ -1,13 +1,13 @@
 # Solidity Typescript Template [OpenZeppelin]
 
-[![Build Status](https://travis-ci.com/akropolisio/solidity-typescript-template.svg?branch=master)](https://travis-ci.com/ilyakmet/solidity-typescript-template)
-[![codecov](https://codecov.io/gh/akropolisio/solidity-typescript-template/branch/master/graph/badge.svg)](https://codecov.io/gh/ilyakmet/solidity-typescript-template)
+[![Build Status](https://travis-ci.com/akropolisio/solidity-typescript-template.svg?branch=master)](https://travis-ci.com/akropolisio/gsn-v1-adapter)
+[![codecov](https://codecov.io/gh/akropolisio/gsn-v1-adapter/branch/master/graph/badge.svg)](https://codecov.io/gh/akropolisio/gsn-v1-adapter)
 
 ## Developer Tools 🛠️
 
 - [Truffle](https://trufflesuite.com/)
 - [TypeChain](https://github.com/ethereum-ts/TypeChain)
-- [Openzeppelin SDK](https://openzeppelin.com)
+- [OpenZeppelin SDK](https://openzeppelin.com)
 
 ## Start
 
