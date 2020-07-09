@@ -2,32 +2,42 @@
 
 pragma solidity >=0.4.25 <0.7.0;
 
-import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipient.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipientSignature.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/access/AccessControl.sol";
 
-contract GSNV1Adapter is GSNRecipientUpgradeSafe {
+contract GSNV1Adapter is
+    GSNRecipientSignatureUpgradeSafe,
+    AccessControlUpgradeSafe
+{
+    bytes32 private constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+
     struct Target {
         string targetName;
         address targetAddress;
     }
 
-    mapping(bytes4 => Target) private _targets;
+    mapping(bytes => Target) private _targets;
 
-    function initilize() external initializer {
-        // QUESTION Proxy
-        __Context_init_unchained();
-        __GSNRecipient_init_unchained();
+    function initilize(address trustedSigner) public initializer {
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setupRole(MANAGER_ROLE, _msgSender());
+        __GSNRecipientSignature_init(trustedSigner);
     }
 
-    fallback() external {
-        (bool success, bytes memory result) = _targets[_encodedFunctionName()]
-            .targetAddress
-            .call(msg.data);
-        (success, result);
+    fallback() external payable {
+        _delegate(_msgData());
     }
+
+    // solhint-disable-next-line no-empty-blocks
+    receive() external payable {}
 
     // GETTERS
 
-    function getTargetName(bytes4 encodedFunction)
+    function getManager() external pure returns (bytes32) {
+        return MANAGER_ROLE;
+    }
+
+    function getTargetName(bytes memory encodedFunction)
         external
         view
         returns (string memory)
@@ -35,7 +45,7 @@ contract GSNV1Adapter is GSNRecipientUpgradeSafe {
         return _targets[encodedFunction].targetName;
     }
 
-    function getTargetAddress(bytes4 encodedFunction)
+    function getTargetAddress(bytes memory encodedFunction)
         external
         view
         returns (address)
@@ -47,10 +57,11 @@ contract GSNV1Adapter is GSNRecipientUpgradeSafe {
 
     // TODO onlyOwner modifier
     function setTarget(
-        bytes4 encodedFunctionName,
+        bytes memory encodedFunctionName,
         string memory targetName,
         address targetAddress
     ) external returns (bool) {
+        require(hasRole(MANAGER_ROLE, _msgSender()), "Caller is not a manager");
         _targets[encodedFunctionName] = Target({
             targetName: targetName,
             targetAddress: targetAddress
@@ -60,43 +71,16 @@ contract GSNV1Adapter is GSNRecipientUpgradeSafe {
 
     // RELAYHUB ACCESS
 
-    function deposit() external payable {
+    function deposit() public payable {
         IRelayHub(getHubAddr()).depositFor{ value: msg.value }(address(this));
     }
 
     // TODO onlyOwner modifier
-    function withdraw(uint256 amount, address payable payee) external {
+    function withdraw(uint256 amount, address payable payee) public {
         _withdrawDeposits(amount, payee);
     }
 
     // RELAYHUB CALLS
-
-    // TODO Check Original Sender Signature (canRelay or ECDSA OZ)
-    function acceptRelayedCall(
-        address relay,
-        address from,
-        bytes calldata encodedFunction,
-        uint256 transactionFee,
-        uint256 gasPrice,
-        uint256 gasLimit,
-        uint256 nonce,
-        bytes calldata approvalData,
-        uint256 maxPossibleCharge
-    ) external override view returns (uint256, bytes memory) {
-        (
-            relay,
-            from,
-            encodedFunction,
-            transactionFee,
-            gasPrice,
-            gasLimit,
-            nonce,
-            approvalData,
-            maxPossibleCharge
-        );
-
-        return _approveRelayedCall();
-    }
 
     // We won't do any pre or post processing, so leave _preRelayedCall and _postRelayedCall empty
     function _preRelayedCall(bytes memory context)
@@ -116,9 +100,44 @@ contract GSNV1Adapter is GSNRecipientUpgradeSafe {
         (context, actualCharge);
     }
 
+    // MSG
+
+    function _msgSender()
+        internal
+        virtual
+        override(ContextUpgradeSafe, GSNRecipientUpgradeSafe)
+        view
+        returns (address payable)
+    {
+        return ContextUpgradeSafe._msgSender();
+    }
+
+    function _msgData()
+        internal
+        virtual
+        override(ContextUpgradeSafe, GSNRecipientUpgradeSafe)
+        view
+        returns (bytes memory)
+    {
+        return GSNRecipientUpgradeSafe._msgData();
+    }
+
     // PRIVATE FUNCTIONS
 
-    function _encodedFunctionName() private returns (bytes4) {
-        // TODO encodedFunctionName
+    function _encodedFunctionName() private view returns (bytes memory) {
+        bytes memory actualData = new bytes(4);
+
+        for (uint256 i = 0; i < 4; ++i) {
+            actualData[i] = _msgData()[i];
+        }
+
+        return actualData;
+    }
+
+    function _delegate(bytes memory) private returns (bool, bytes memory) {
+        return
+            _targets[_encodedFunctionName()].targetAddress.call{
+                value: msg.value
+            }(_msgData());
     }
 }
