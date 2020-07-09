@@ -11,6 +11,11 @@ contract GSNV1Adapter is
 {
     bytes32 private constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
+    modifier onlyManager() {
+        require(hasRole(MANAGER_ROLE, _msgSender()), "Caller is not a manager");
+        _;
+    }
+
     struct Target {
         string targetName;
         address targetAddress;
@@ -25,7 +30,7 @@ contract GSNV1Adapter is
     }
 
     fallback() external payable {
-        _delegate(_msgData());
+        _delegate();
     }
 
     // solhint-disable-next-line no-empty-blocks
@@ -55,13 +60,11 @@ contract GSNV1Adapter is
 
     // SETTERS
 
-    // TODO onlyOwner modifier
     function setTarget(
         bytes memory encodedFunctionName,
         string memory targetName,
         address targetAddress
-    ) external returns (bool) {
-        require(hasRole(MANAGER_ROLE, _msgSender()), "Caller is not a manager");
+    ) external onlyManager returns (bool) {
         _targets[encodedFunctionName] = Target({
             targetName: targetName,
             targetAddress: targetAddress
@@ -71,12 +74,14 @@ contract GSNV1Adapter is
 
     // RELAYHUB ACCESS
 
-    function deposit() public payable {
+    function deposit() external payable {
         IRelayHub(getHubAddr()).depositFor{ value: msg.value }(address(this));
     }
 
-    // TODO onlyOwner modifier
-    function withdraw(uint256 amount, address payable payee) public {
+    function withdraw(uint256 amount, address payable payee)
+        external
+        onlyManager
+    {
         _withdrawDeposits(amount, payee);
     }
 
@@ -109,7 +114,7 @@ contract GSNV1Adapter is
         view
         returns (address payable)
     {
-        return ContextUpgradeSafe._msgSender();
+        return GSNRecipientUpgradeSafe._msgSender();
     }
 
     function _msgData()
@@ -119,7 +124,7 @@ contract GSNV1Adapter is
         view
         returns (bytes memory)
     {
-        return GSNRecipientUpgradeSafe._msgData();
+        return ContextUpgradeSafe._msgData();
     }
 
     // PRIVATE FUNCTIONS
@@ -134,7 +139,7 @@ contract GSNV1Adapter is
         return actualData;
     }
 
-    function _delegate(bytes memory) private returns (bool, bytes memory) {
+    function _delegate() private returns (bool, bytes memory) {
         return
             _targets[_encodedFunctionName()].targetAddress.call{
                 value: msg.value
