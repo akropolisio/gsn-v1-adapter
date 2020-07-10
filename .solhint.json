@@ -2,7 +2,8 @@
   "extends": "solhint:recommended",
   "rules": {
     "prettier/prettier": "error",
-    "avoid-low-level-calls": "off"
+    "avoid-low-level-calls": "off",
+    "func-name-mixedcase": "off"
   },
   "plugins": ["prettier"]
 }

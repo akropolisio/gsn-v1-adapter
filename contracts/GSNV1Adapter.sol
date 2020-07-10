@@ -5,6 +5,8 @@ pragma solidity >=0.4.25 <0.7.0;
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipientSignature.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/access/AccessControl.sol";
 
+// bytes4(keccak256(bytes("GSNV1Adapter"))) == 0xb373a41f
+
 contract GSNV1Adapter is
     GSNRecipientSignatureUpgradeSafe,
     AccessControlUpgradeSafe
@@ -23,7 +25,7 @@ contract GSNV1Adapter is
 
     mapping(bytes => Target) private _targets;
 
-    function initilize(address trustedSigner) public initializer {
+    function initilize__0xb373a41f(address trustedSigner) public initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MANAGER_ROLE, _msgSender());
         __GSNRecipientSignature_init(trustedSigner);
@@ -38,11 +40,11 @@ contract GSNV1Adapter is
 
     // GETTERS
 
-    function getManager() external pure returns (bytes32) {
+    function getManager__0xb373a41f() external pure returns (bytes32) {
         return MANAGER_ROLE;
     }
 
-    function getTargetName(bytes memory encodedFunction)
+    function getTargetName__0xb373a41f(bytes memory encodedFunction)
         external
         view
         returns (string memory)
@@ -50,7 +52,7 @@ contract GSNV1Adapter is
         return _targets[encodedFunction].targetName;
     }
 
-    function getTargetAddress(bytes memory encodedFunction)
+    function getTargetAddress__0xb373a41f(bytes memory encodedFunction)
         external
         view
         returns (address)
@@ -60,7 +62,7 @@ contract GSNV1Adapter is
 
     // SETTERS
 
-    function setTarget(
+    function setTarget__0xb373a41f(
         bytes memory encodedFunctionName,
         string memory targetName,
         address targetAddress
@@ -74,11 +76,11 @@ contract GSNV1Adapter is
 
     // RELAYHUB ACCESS
 
-    function deposit() external payable {
+    function deposit__0xb373a41f() external payable {
         IRelayHub(getHubAddr()).depositFor{ value: msg.value }(address(this));
     }
 
-    function withdraw(uint256 amount, address payable payee)
+    function withdraw__0xb373a41f(uint256 amount, address payable payee)
         external
         onlyManager
     {
@@ -87,7 +89,6 @@ contract GSNV1Adapter is
 
     // RELAYHUB CALLS
 
-    // We won't do any pre or post processing, so leave _preRelayedCall and _postRelayedCall empty
     function _preRelayedCall(bytes memory context)
         internal
         override
@@ -124,7 +125,15 @@ contract GSNV1Adapter is
         view
         returns (bytes memory)
     {
-        return ContextUpgradeSafe._msgData();
+        if (msg.sender != getHubAddr()) {
+            return
+                abi.encodePacked(
+                    GSNRecipientUpgradeSafe._msgData(),
+                    _msgSender()
+                );
+        } else {
+            return ContextUpgradeSafe._msgData();
+        }
     }
 
     // PRIVATE FUNCTIONS

@@ -2,18 +2,22 @@
 
 pragma solidity >=0.4.25 <0.7.0;
 
-import "./RelayerCallSender.sol";
+import "./RelayedCallSender.sol";
 
-contract CounterModuleV2 is RelayerCallSender {
+contract CounterModuleV2 is RelayedCallSender {
     uint256 private _value;
-    address public sender;
+    address private _sender;
 
-    function set(uint256 value) external {
+    function setValue(uint256 value) external {
         _value = value;
-        sender = _getRelayedCallSender();
+        _sender = _getRelayedCallSender();
     }
 
     function getValue() external view returns (uint256) {
         return _value;
+    }
+
+    function getSender() external view returns (address) {
+        return _sender;
     }
 }
