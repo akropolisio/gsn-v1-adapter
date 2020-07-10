@@ -16,7 +16,7 @@ const {
 
 const { deployRelayHub, fundRecipient } = require("@openzeppelin/gsn-helpers");
 
-const { BN, ether } = require("@openzeppelin/test-helpers");
+const { BN, ether, expectRevert } = require("@openzeppelin/test-helpers");
 
 const {
   abi: CounterModuleV1Abi,
@@ -81,7 +81,7 @@ describe("GSNV1Adapter", async () => {
       irelayHubInstance.address,
     );
 
-    await gsnV1AdapterInstance.initilize__0xb373a41f(forwarder, {
+    await gsnV1AdapterInstance.initilize__0xb373a41f(forwarder, owner, {
       from: owner,
     });
 
@@ -123,7 +123,7 @@ describe("GSNV1Adapter", async () => {
         // @ts-ignore
       } = await gsnV1AdapterInstance.sendTransaction({
         from: _,
-        data: "0xe8927fbc",
+        data: counterModuleV1Web3Instance.methods.increase().encodeABI(),
         useGSN: false,
       });
 
@@ -159,8 +159,7 @@ describe("GSNV1Adapter", async () => {
         // @ts-ignore
       } = await gsnV1AdapterInstance.sendTransaction({
         from: _,
-        data:
-          "0x552410770000000000000000000000000000000000000000000000000000000000000001",
+        data: counterModuleV2Web3Instance.methods.setValue("1").encodeABI(),
         useGSN: false,
       });
 
@@ -194,7 +193,9 @@ describe("GSNV1Adapter", async () => {
         // @ts-ignore
       } = await gsnV1AdapterInstance.sendTransaction({
         from: _,
-        data: "0xe55bef2b",
+        data: gsnV1AdapterWeb3Instance.methods
+          .deposit__0xb373a41f()
+          .encodeABI(),
         value: ether("1"),
         useGSN: false,
       });
@@ -213,119 +214,150 @@ describe("GSNV1Adapter", async () => {
         // @ts-ignore
         gsnV1AdapterInstance.address,
       );
+
+      const _PreBalance = await web3.eth.getBalance(_);
+
       const {
         receipt: { from },
         // @ts-ignore
       } = await gsnV1AdapterInstance.sendTransaction({
         from: owner,
         data: gsnV1AdapterWeb3Instance.methods
-          .withdraw__0xb373a41f(ether("1").toString(), owner)
+          .withdraw__0xb373a41f(ether("1").toString(), _)
           .encodeABI(),
         useGSN: false,
       });
+
+      const _PostBalance = await web3.eth.getBalance(_);
+
       const gsnV1AdapterPostBalance = await irelayHubInstance.balanceOf(
         // @ts-ignore
         gsnV1AdapterInstance.address,
       );
+
+      expect(_PostBalance).to.be.bignumber.equal(
+        new BN(_PreBalance).add(ether("1")),
+      );
       expect(gsnV1AdapterPostBalance).to.be.bignumber.equal(ether("0"));
       expect(from.toUpperCase()).equal(owner.toUpperCase());
     });
+
+    it("should get manager role", async function () {
+      const managerRole = await gsnV1AdapterInstance.getManagerRole__0xb373a41f();
+
+      expect(managerRole).equal(
+        "0x241ecf16d79d0f8dbfb92cbc07fe17840425976cf0667f022fe9877caa831b08",
+      );
+    });
+
+    it("should get target name", async function () {
+      const targetName = await gsnV1AdapterInstance.getTargetName__0xb373a41f(
+        "0xe8927fbc",
+      );
+
+      expect(targetName).equal("CounterModuleV1__increase");
+    });
+
+    it("should get target address", async function () {
+      const targetAddress = await gsnV1AdapterInstance.getTargetAddress__0xb373a41f(
+        "0xe8927fbc",
+      );
+
+      // @ts-ignore
+      expect(targetAddress).equal(counterModuleV1Instance.address);
+    });
   });
 
-  // context("when relay-called", async () => {
-  //   it("should increase counter in CounterModuleV1", async function () {
-  //     const gsnV1AdapterPreBalance = await irelayHubInstance.balanceOf(
-  //       // @ts-ignore
-  //       gsnV1AdapterInstance.address,
-  //     );
+  context("when relay-called", async () => {
+    it("should increase counter in CounterModuleV1", async function () {
+      const gsnV1AdapterPreBalance = await irelayHubInstance.balanceOf(
+        // @ts-ignore
+        gsnV1AdapterInstance.address,
+      );
 
-  //     const senderPreBalance = await web3.eth.getBalance(_);
+      const senderPreBalance = await web3.eth.getBalance(_);
 
-  //     const {
-  //       receipt: { from },
-  //       // @ts-ignore
-  //     } = await gsnV1AdapterInstance.sendTransaction({
-  //       from: _,
-  //       data: "0xe8927fbc",
-  //       useGSN: true,
-  //     });
+      const {
+        receipt: { from },
+        // @ts-ignore
+      } = await gsnV1AdapterInstance.sendTransaction({
+        from: _,
+        data: counterModuleV1Web3Instance.methods.increase().encodeABI(),
+        useGSN: true,
+      });
 
-  //     const value = await counterModuleV1Instance.getValue();
-  //     const sender = await counterModuleV1Instance.getSender();
+      const value = await counterModuleV1Instance.getValue();
+      const sender = await counterModuleV1Instance.getSender();
 
-  //     const gsnV1AdapterPostBalance = await irelayHubInstance.balanceOf(
-  //       // @ts-ignore
-  //       gsnV1AdapterInstance.address,
-  //     );
+      const gsnV1AdapterPostBalance = await irelayHubInstance.balanceOf(
+        // @ts-ignore
+        gsnV1AdapterInstance.address,
+      );
 
-  //     const senderPostBalance = await web3.eth.getBalance(_);
+      const senderPostBalance = await web3.eth.getBalance(_);
 
-  //     // console.log({ accounts });
+      expect(gsnV1AdapterPreBalance).to.be.bignumber.above(
+        gsnV1AdapterPostBalance,
+      );
+      expect(senderPreBalance).to.be.bignumber.equal(senderPostBalance);
+      expect(value).to.be.bignumber.equal(new BN(1));
+      expect(from.toUpperCase()).equal(accounts[9].toUpperCase());
+      expect(sender.toUpperCase()).equal(_.toUpperCase());
+    });
 
-  //     expect(gsnV1AdapterPreBalance).to.be.bignumber.above(
-  //       gsnV1AdapterPostBalance,
-  //     );
-  //     expect(senderPreBalance).to.be.bignumber.equal(senderPostBalance);
-  //     expect(value).to.be.bignumber.equal(new BN(1));
-  //     expect(from.toUpperCase()).equal(accounts[9].toUpperCase());
-  //     expect(sender.toUpperCase()).equal(_.toUpperCase());
-  //   });
+    it("should set counter in CounterModuleV2", async function () {
+      const gsnV1AdapterPreBalance = await irelayHubInstance.balanceOf(
+        // @ts-ignore
+        gsnV1AdapterInstance.address,
+      );
 
-  //   it("should set counter in CounterModuleV2", async function () {
-  //     const gsnV1AdapterPreBalance = await irelayHubInstance.balanceOf(
-  //       // @ts-ignore
-  //       gsnV1AdapterInstance.address,
-  //     );
+      const senderPreBalance = await web3.eth.getBalance(_);
 
-  //     const senderPreBalance = await web3.eth.getBalance(_);
+      const {
+        receipt: { from },
+        // @ts-ignore
+      } = await gsnV1AdapterInstance.sendTransaction({
+        from: _,
+        data: counterModuleV2Web3Instance.methods.setValue("1").encodeABI(),
+        useGSN: true,
+      });
 
-  //     const {
-  //       receipt: { from },
-  //       // @ts-ignore
-  //     } = await gsnV1AdapterInstance.sendTransaction({
-  //       from: _,
-  //       data:
-  //         "0x552410770000000000000000000000000000000000000000000000000000000000000001",
-  //       useGSN: true,
-  //     });
+      const value = await counterModuleV2Instance.getValue();
+      const sender = await counterModuleV2Instance.getSender();
 
-  //     const value = await counterModuleV2Instance.getValue();
-  //     const sender = await counterModuleV2Instance.getSender();
+      const gsnV1AdapterPostBalance = await irelayHubInstance.balanceOf(
+        // @ts-ignore
+        gsnV1AdapterInstance.address,
+      );
 
-  //     const gsnV1AdapterPostBalance = await irelayHubInstance.balanceOf(
-  //       // @ts-ignore
-  //       gsnV1AdapterInstance.address,
-  //     );
+      const senderPostBalance = await web3.eth.getBalance(_);
 
-  //     const senderPostBalance = await web3.eth.getBalance(_);
+      expect(gsnV1AdapterPreBalance).to.be.bignumber.above(
+        gsnV1AdapterPostBalance,
+      );
+      expect(senderPreBalance).to.be.bignumber.equal(senderPostBalance);
+      expect(value).to.be.bignumber.equal(new BN(1));
+      expect(from.toUpperCase()).equal(accounts[9].toUpperCase());
+      expect(sender.toUpperCase()).equal(_.toUpperCase());
+    });
+  });
 
-  //     expect(gsnV1AdapterPreBalance).to.be.bignumber.above(
-  //       gsnV1AdapterPostBalance,
-  //     );
-  //     expect(senderPreBalance).to.be.bignumber.equal(senderPostBalance);
-  //     expect(value).to.be.bignumber.equal(new BN(1));
-  //     expect(from.toUpperCase()).equal(accounts[9].toUpperCase());
-  //     expect(sender.toUpperCase()).equal(_.toUpperCase());
-  //   });
-  // });
+  context("when relay-called from fake forwarder", async () => {
+    it("should not increase counter in CounterModuleV1", async function () {
+      try {
+        const {
+          receipt: { from },
+          // @ts-ignore
+        } = await gsnV1AdapterInstance.sendTransaction({
+          from: _,
+          data: counterModuleV1Web3Instance.methods.increase().encodeABI(),
+          useGSN: true,
+        });
 
-  // context("when relay-called from fake trusted forwarder", async () => {
-  //   // TODO Change Error Capture
-  //   it("should not increase counter in CounterModuleV1", async function () {
-  //     try {
-  //       const {
-  //         receipt: { from },
-  //         // @ts-ignore
-  //       } = await gsnV1AdapterInstance.sendTransaction({
-  //         from: _,
-  //         data: "0xe8927fbc",
-  //         useGSN: true,
-  //       });
-
-  //       throw null;
-  //     } catch (err) {
-  //       expect(err, "Expected a revert but did not get one");
-  //     }
-  //   });
-  // });
+        throw null;
+      } catch (err) {
+        expect(err, "Expected a revert but did not get one");
+      }
+    });
+  });
 });

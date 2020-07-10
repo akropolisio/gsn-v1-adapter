@@ -25,9 +25,12 @@ contract GSNV1Adapter is
 
     mapping(bytes => Target) private _targets;
 
-    function initilize__0xb373a41f(address trustedSigner) public initializer {
-        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _setupRole(MANAGER_ROLE, _msgSender());
+    function initilize__0xb373a41f(address trustedSigner, address admin)
+        public
+        initializer
+    {
+        _setupRole(DEFAULT_ADMIN_ROLE, admin);
+        _setupRole(MANAGER_ROLE, admin);
         __GSNRecipientSignature_init(trustedSigner);
     }
 
@@ -40,7 +43,7 @@ contract GSNV1Adapter is
 
     // GETTERS
 
-    function getManager__0xb373a41f() external pure returns (bytes32) {
+    function getManagerRole__0xb373a41f() external pure returns (bytes32) {
         return MANAGER_ROLE;
     }
 
