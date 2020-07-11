@@ -45,7 +45,7 @@ All functions in this implementation have a `0xb373a41f` postfix, that prevents 
 
 > 0xb373a41f == bytes4(keccak256(bytes("GSNV1Adapter")))
 
-## deposit\_\_0xb373a41f - read
+## deposit\_\_0xb373a41f
 
 _No parameters_
 See {IRelayHub-depositFor}. https://github.com/OpenZeppelin/openzeppelin-contracts-ethereum-package
@@ -90,7 +90,7 @@ Returns:
 |-----|-----|-----------
 |targetName|string|Name of the target.
 
-## initilize\_\_0xb373a41f - read
+## initilize\_\_0xb373a41f
 
 | name          | type    | description                    |
 | ------------- | ------- | ------------------------------ |
@@ -101,7 +101,7 @@ Sets the values for {trustedSigner} and {admin}. All two of these values are imm
 Returns:
 _No parameters_
 
-## setTarget\_\_0xb373a41f - read
+## setTarget\_\_0xb373a41f
 
 | name            | type    | description                         |
 | --------------- | ------- | ----------------------------------- |
@@ -116,7 +116,7 @@ Returns:
 |-----|-----|-----------
 |result|bool|Boolean value indicating whether the operation succeeded.
 
-## withdraw\_\_0xb373a41f - read
+## withdraw\_\_0xb373a41f
 
 | name   | type    | description                                                       |
 | ------ | ------- | ----------------------------------------------------------------- |
