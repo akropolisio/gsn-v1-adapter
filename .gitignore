@@ -6,4 +6,5 @@ coverage.json
 build
 yarn.lock
 yarn-error.log
+dist
 .openzeppelin/.session
