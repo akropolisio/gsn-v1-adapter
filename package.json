@@ -1,5 +1,5 @@
 {
-  "name": "solidity-typescript-template",
+  "name": "gsn-v1-adapter",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "https://github.com/ilyakmet/solidity-typescript-template.git",
