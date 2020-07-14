@@ -1,0 +1,392 @@
+{
+  "fileName": "RelayedCallSender.sol",
+  "contractName": "RelayedCallSender",
+  "source": "// SPDX-License-Identifier: MIT\n\npragma solidity ^0.6.0;\n\ncontract RelayedCallSender {\n    function _getRelayedCallSender()\n        internal\n        pure\n        returns (address payable result)\n    {\n        // We need to read 20 bytes (an address) located at array index msg.data.length - 20. In memory, the array\n        // is prefixed with a 32-byte length value, so we first add 32 to get the memory read index. However, doing\n        // so would leave the address in the upper 20 bytes of the 32-byte word, which is inconvenient and would\n        // require bit shifting. We therefore subtract 12 from the read index so the address lands on the lower 20\n        // bytes. This can always be done due to the 32-byte prefix.\n\n        // The final memory read index is msg.data.length - 20 + 32 - 12 = msg.data.length. Using inline assembly is the\n        // easiest/most-efficient way to perform this operation.\n\n        // These fields are not accessible from assembly\n        bytes memory array = msg.data;\n        uint256 index = msg.data.length;\n\n        // solhint-disable-next-line no-inline-assembly\n        assembly {\n            // Load the 32 bytes word from memory with the address on the lower 20 bytes, and mask those.\n            result := and(\n                mload(add(array, index)),\n                0xffffffffffffffffffffffffffffffffffffffff\n            )\n        }\n        return result;\n    }\n}\n",
+  "sourcePath": "contracts/test/RelayedCallSender.sol",
+  "sourceMap": "58:1360:13:-:0;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "58:1360:13:-:0;;;;;",
+  "abi": [],
+  "ast": {
+    "absolutePath": "contracts/test/RelayedCallSender.sol",
+    "exportedSymbols": {
+      "RelayedCallSender": [
+        2248
+      ]
+    },
+    "id": 2249,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 2227,
+        "literals": [
+          "solidity",
+          "^",
+          "0.6",
+          ".0"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "33:23:13"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": true,
+        "id": 2248,
+        "linearizedBaseContracts": [
+          2248
+        ],
+        "name": "RelayedCallSender",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 2246,
+              "nodeType": "Block",
+              "src": "199:1217:13",
+              "statements": [
+                {
+                  "assignments": [
+                    2233
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 2233,
+                      "mutability": "mutable",
+                      "name": "array",
+                      "nodeType": "VariableDeclaration",
+                      "overrides": null,
+                      "scope": 2246,
+                      "src": "982:18:13",
+                      "stateVariable": false,
+                      "storageLocation": "memory",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bytes_memory_ptr",
+                        "typeString": "bytes"
+                      },
+                      "typeName": {
+                        "id": 2232,
+                        "name": "bytes",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "982:5:13",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes_storage_ptr",
+                          "typeString": "bytes"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 2236,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "expression": {
+                      "argumentTypes": null,
+                      "id": 2234,
+                      "name": "msg",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": -15,
+                      "src": "1003:3:13",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_magic_message",
+                        "typeString": "msg"
+                      }
+                    },
+                    "id": 2235,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberName": "data",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": null,
+                    "src": "1003:8:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_calldata_ptr",
+                      "typeString": "bytes calldata"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "982:29:13"
+                },
+                {
+                  "assignments": [
+                    2238
+                  ],
+                  "declarations": [
+                    {
+                      "constant": false,
+                      "id": 2238,
+                      "mutability": "mutable",
+                      "name": "index",
+                      "nodeType": "VariableDeclaration",
+                      "overrides": null,
+                      "scope": 2246,
+                      "src": "1021:13:13",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 2237,
+                        "name": "uint256",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "1021:7:13",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "value": null,
+                      "visibility": "internal"
+                    }
+                  ],
+                  "id": 2242,
+                  "initialValue": {
+                    "argumentTypes": null,
+                    "expression": {
+                      "argumentTypes": null,
+                      "expression": {
+                        "argumentTypes": null,
+                        "id": 2239,
+                        "name": "msg",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": -15,
+                        "src": "1037:3:13",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_magic_message",
+                          "typeString": "msg"
+                        }
+                      },
+                      "id": 2240,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "data",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": null,
+                      "src": "1037:8:13",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bytes_calldata_ptr",
+                        "typeString": "bytes calldata"
+                      }
+                    },
+                    "id": 2241,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "memberName": "length",
+                    "nodeType": "MemberAccess",
+                    "referencedDeclaration": null,
+                    "src": "1037:15:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "nodeType": "VariableDeclarationStatement",
+                  "src": "1021:31:13"
+                },
+                {
+                  "AST": {
+                    "nodeType": "YulBlock",
+                    "src": "1128:259:13",
+                    "statements": [
+                      {
+                        "nodeType": "YulAssignment",
+                        "src": "1248:129:13",
+                        "value": {
+                          "arguments": [
+                            {
+                              "arguments": [
+                                {
+                                  "arguments": [
+                                    {
+                                      "name": "array",
+                                      "nodeType": "YulIdentifier",
+                                      "src": "1289:5:13"
+                                    },
+                                    {
+                                      "name": "index",
+                                      "nodeType": "YulIdentifier",
+                                      "src": "1296:5:13"
+                                    }
+                                  ],
+                                  "functionName": {
+                                    "name": "add",
+                                    "nodeType": "YulIdentifier",
+                                    "src": "1285:3:13"
+                                  },
+                                  "nodeType": "YulFunctionCall",
+                                  "src": "1285:17:13"
+                                }
+                              ],
+                              "functionName": {
+                                "name": "mload",
+                                "nodeType": "YulIdentifier",
+                                "src": "1279:5:13"
+                              },
+                              "nodeType": "YulFunctionCall",
+                              "src": "1279:24:13"
+                            },
+                            {
+                              "kind": "number",
+                              "nodeType": "YulLiteral",
+                              "src": "1321:42:13",
+                              "type": "",
+                              "value": "0xffffffffffffffffffffffffffffffffffffffff"
+                            }
+                          ],
+                          "functionName": {
+                            "name": "and",
+                            "nodeType": "YulIdentifier",
+                            "src": "1258:3:13"
+                          },
+                          "nodeType": "YulFunctionCall",
+                          "src": "1258:119:13"
+                        },
+                        "variableNames": [
+                          {
+                            "name": "result",
+                            "nodeType": "YulIdentifier",
+                            "src": "1248:6:13"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "evmVersion": "petersburg",
+                  "externalReferences": [
+                    {
+                      "declaration": 2233,
+                      "isOffset": false,
+                      "isSlot": false,
+                      "src": "1289:5:13",
+                      "valueSize": 1
+                    },
+                    {
+                      "declaration": 2238,
+                      "isOffset": false,
+                      "isSlot": false,
+                      "src": "1296:5:13",
+                      "valueSize": 1
+                    },
+                    {
+                      "declaration": 2230,
+                      "isOffset": false,
+                      "isSlot": false,
+                      "src": "1248:6:13",
+                      "valueSize": 1
+                    }
+                  ],
+                  "id": 2243,
+                  "nodeType": "InlineAssembly",
+                  "src": "1119:268:13"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 2244,
+                    "name": "result",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 2230,
+                    "src": "1403:6:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address_payable",
+                      "typeString": "address payable"
+                    }
+                  },
+                  "functionReturnParameters": 2231,
+                  "id": 2245,
+                  "nodeType": "Return",
+                  "src": "1396:13:13"
+                }
+              ]
+            },
+            "documentation": null,
+            "id": 2247,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "_getRelayedCallSender",
+            "nodeType": "FunctionDefinition",
+            "overrides": null,
+            "parameters": {
+              "id": 2228,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "121:2:13"
+            },
+            "returnParameters": {
+              "id": 2231,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 2230,
+                  "mutability": "mutable",
+                  "name": "result",
+                  "nodeType": "VariableDeclaration",
+                  "overrides": null,
+                  "scope": 2247,
+                  "src": "171:22:13",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address_payable",
+                    "typeString": "address payable"
+                  },
+                  "typeName": {
+                    "id": 2229,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "171:15:13",
+                    "stateMutability": "payable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address_payable",
+                      "typeString": "address payable"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "170:24:13"
+            },
+            "scope": 2248,
+            "src": "91:1325:13",
+            "stateMutability": "pure",
+            "virtual": false,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 2249,
+        "src": "58:1360:13"
+      }
+    ],
+    "src": "33:1386:13"
+  },
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220a5aa88b615b8e0683fd23cbdd9f32761e1a95e72eae5d341f3d9754a639e565b64736f6c634300060b0033",
+  "deployedBytecode": "0x6080604052600080fdfea2646970667358221220a5aa88b615b8e0683fd23cbdd9f32761e1a95e72eae5d341f3d9754a639e565b64736f6c634300060b0033",
+  "compiler": {
+    "name": "solc",
+    "version": "0.6.11+commit.5ef660b1.Emscripten.clang",
+    "optimizer": {
+      "enabled": false,
+      "runs": 200
+    },
+    "evmVersion": "petersburg"
+  }
+}
