@@ -8,10 +8,6 @@ contract CounterModuleV1 is GSNContext {
     uint256 private _value;
     address private _sender;
 
-    function initialize(address RelayHub) public {
-        GSNContext.initialize(RelayHub);
-    }
-
     function increase() public {
         _value += 1;
         _sender = _msgSender();

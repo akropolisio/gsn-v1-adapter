@@ -49,10 +49,15 @@ describe("GSNV1Adapter", async () => {
   beforeEach(async () => {
     await deployRelayHub(web3, { from: owner });
 
+    gsnV1AdapterInstance = await GSNV1Adapter.new();
+
     counterModuleV1Instance = await CounterModuleV1.new();
+    // @ts-ignore
+    counterModuleV1Instance.initializeContext(gsnV1AdapterInstance.address);
+
     counterModuleV2Instance = await CounterModuleV2.new();
     // @ts-ignore
-    gsnV1AdapterInstance = await GSNV1Adapter.new();
+    counterModuleV2Instance.initializeContext(gsnV1AdapterInstance.address);
 
     irelayHubInstance = await IRelayHub.at(
       "0xD216153c06E857cD7f72665E0aF1d7D82172F494",
@@ -81,12 +86,6 @@ describe("GSNV1Adapter", async () => {
       // @ts-ignore
       irelayHubInstance.address,
     );
-
-    // @ts-ignore
-    await counterModuleV1Instance.initialize(gsnV1AdapterInstance.address);
-
-    // @ts-ignore
-    await counterModuleV2Instance.initialize(gsnV1AdapterInstance.address);
 
     await gsnV1AdapterInstance.initilize__0xb373a41f(forwarder, owner, {
       from: owner,
