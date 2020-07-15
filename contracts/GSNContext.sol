@@ -14,7 +14,7 @@ import "@openzeppelin/upgrades/contracts/Initializable.sol";
  * {GSNRecipientERC20Fee}, or how to write your own.
  */
 contract GSNContext is Initializable {
-    function initializeContext(address RelayHub) public initializer {
+    function initializeContext(address RelayHub) public {
         _upgradeRelayHub(RelayHub);
     }
 
