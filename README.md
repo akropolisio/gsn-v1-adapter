@@ -1,7 +1,7 @@
 # GSNV1 Adapter
 
-[![Build Status](https://travis-ci.com/akropolisio/gsn-v1-adapter.svg?branch=master)](https://travis-ci.com/akropolisio/gsn-v1-adapter)
-[![codecov](https://codecov.io/gh/akropolisio/gsn-v1-adapter/branch/master/graph/badge.svg)](https://codecov.io/gh/akropolisio/gsn-v1-adapter)
+[![Build Status](https://travis-ci.com/akropolisio/gsn-v1-adapter.svg?branch=0.5.0)](https://travis-ci.com/akropolisio/gsn-v1-adapter)
+[![codecov](https://codecov.io/gh/akropolisio/gsn-v1-adapter/branch/0.5.0/graph/badge.svg)](https://codecov.io/gh/akropolisio/gsn-v1-adapter)
 
 Implements delegation of calls to other contracts via GSN, with proper forwarding of return values and bubbling of failures.
 
