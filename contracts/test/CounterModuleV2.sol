@@ -2,15 +2,19 @@
 
 pragma solidity ^0.5.12;
 
-import "./RelayedCallSender.sol";
+import "../GSNContext.sol";
 
-contract CounterModuleV2 is RelayedCallSender {
+contract CounterModuleV2 is GSNContext {
     uint256 private _value;
     address private _sender;
 
+    function initialize(address RelayHub) public {
+        GSNContext.initialize(RelayHub);
+    }
+
     function setValue(uint256 value) external {
         _value = value;
-        _sender = _getRelayedCallSender();
+        _sender = _msgSender();
     }
 
     function getValue() external view returns (uint256) {
