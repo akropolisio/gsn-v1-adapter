@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.4.25 <0.7.0;
+pragma solidity ^0.5.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipientSignature.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/access/AccessControl.sol";
+
+// import "@openzeppelin/contracts-ethereum-package/contracts/access/AccessControl.sol";
 
 /**
  * @title GSNV1Adapter
@@ -17,16 +18,13 @@ import "@openzeppelin/contracts-ethereum-package/contracts/access/AccessControl.
  *
  * @notice 0xb373a41f == bytes4(keccak256(bytes("GSNV1Adapter")))
  */
-contract GSNV1Adapter is
-    GSNRecipientSignatureUpgradeSafe,
-    AccessControlUpgradeSafe
-{
-    bytes32 private constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
+contract GSNV1Adapter is GSNRecipientSignature {
+    // bytes32 private constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
 
-    modifier onlyManager() {
-        require(hasRole(MANAGER_ROLE, _msgSender()), "Caller is not a manager");
-        _;
-    }
+    // modifier onlyManager() {
+    //     require(hasRole(MANAGER_ROLE, _msgSender()), "Caller is not a manager");
+    //     _;
+    // }
 
     struct Target {
         string targetName;
@@ -49,24 +47,22 @@ contract GSNV1Adapter is
         public
         initializer
     {
-        _setupRole(DEFAULT_ADMIN_ROLE, admin);
-        _setupRole(MANAGER_ROLE, admin);
-        __GSNRecipientSignature_init(trustedSigner);
+        (admin);
+        // _setupRole(DEFAULT_ADMIN_ROLE, admin);
+        // _setupRole(MANAGER_ROLE, admin);
+        GSNRecipientSignature.initialize(trustedSigner);
     }
 
-    fallback() external payable {
+    function() external payable {
         _delegate();
     }
 
-    // solhint-disable-next-line no-empty-blocks
-    receive() external payable {}
-
-    /**
-     * @dev Returns hash of the manager role.
-     */
-    function getManagerRole__0xb373a41f() external pure returns (bytes32) {
-        return MANAGER_ROLE;
-    }
+    // /**
+    //  * @dev Returns hash of the manager role.
+    //  */
+    // function getManagerRole__0xb373a41f() external pure returns (bytes32) {
+    //     return MANAGER_ROLE;
+    // }
 
     /**
      * @dev Returns name of the target.
@@ -75,7 +71,7 @@ contract GSNV1Adapter is
      *
      * @return String name of the target.
      */
-    function getTargetName__0xb373a41f(bytes memory encodedFunction)
+    function getTargetName__0xb373a41f(bytes calldata encodedFunction)
         external
         view
         returns (string memory)
@@ -90,7 +86,7 @@ contract GSNV1Adapter is
      *
      * @return Address of the target.
      */
-    function getTargetAddress__0xb373a41f(bytes memory encodedFunction)
+    function getTargetAddress__0xb373a41f(bytes calldata encodedFunction)
         external
         view
         returns (address)
@@ -112,10 +108,10 @@ contract GSNV1Adapter is
      * @return Boolean value indicating whether the operation succeeded.
      */
     function setTarget__0xb373a41f(
-        bytes memory encodedFunction,
-        string memory targetName,
+        bytes calldata encodedFunction,
+        string calldata targetName,
         address targetAddress
-    ) external onlyManager returns (bool) {
+    ) external returns (bool) {
         _targets[encodedFunction] = Target({
             targetName: targetName,
             targetAddress: targetAddress
@@ -130,7 +126,7 @@ contract GSNV1Adapter is
      * @return Boolean value indicating whether the operation succeeded.
      */
     function deposit__0xb373a41f() external payable returns (bool) {
-        IRelayHub(getHubAddr()).depositFor{ value: msg.value }(address(this));
+        IRelayHub(getHubAddr()).depositFor.value(msg.value)(address(this));
         return true;
     }
 
@@ -145,18 +141,13 @@ contract GSNV1Adapter is
      */
     function withdraw__0xb373a41f(uint256 amount, address payable payee)
         external
-        onlyManager
         returns (bool)
     {
         _withdrawDeposits(amount, payee);
         return true;
     }
 
-    function _preRelayedCall(bytes memory context)
-        internal
-        override
-        returns (bytes32)
-    {
+    function _preRelayedCall(bytes memory context) internal returns (bytes32) {
         (context);
     }
 
@@ -165,35 +156,19 @@ contract GSNV1Adapter is
         bool,
         uint256 actualCharge,
         bytes32
-    ) internal override {
+    ) internal {
         (context, actualCharge);
     }
 
-    function _msgSender()
-        internal
-        virtual
-        override(ContextUpgradeSafe, GSNRecipientUpgradeSafe)
-        view
-        returns (address payable)
-    {
-        return GSNRecipientUpgradeSafe._msgSender();
+    function _msgSender() internal view returns (address payable) {
+        return GSNRecipient._msgSender();
     }
 
-    function _msgData()
-        internal
-        virtual
-        override(ContextUpgradeSafe, GSNRecipientUpgradeSafe)
-        view
-        returns (bytes memory)
-    {
+    function _msgData() internal view returns (bytes memory) {
         if (msg.sender != getHubAddr()) {
-            return
-                abi.encodePacked(
-                    GSNRecipientUpgradeSafe._msgData(),
-                    _msgSender()
-                );
+            return abi.encodePacked(GSNRecipient._msgData(), _msgSender());
         } else {
-            return ContextUpgradeSafe._msgData();
+            return Context._msgData();
         }
     }
 
@@ -209,8 +184,8 @@ contract GSNV1Adapter is
 
     function _delegate() private returns (bool, bytes memory) {
         return
-            _targets[_encodedFunctionName()].targetAddress.call{
-                value: msg.value
-            }(_msgData());
+            _targets[_encodedFunctionName()].targetAddress.call.value(
+                msg.value
+            )(_msgData());
     }
 }
