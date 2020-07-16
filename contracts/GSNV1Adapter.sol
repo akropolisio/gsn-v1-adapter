@@ -183,9 +183,16 @@ contract GSNV1Adapter is GSNRecipientSignature {
     }
 
     function _delegate() private returns (bool, bytes memory) {
-        return
-            _targets[_encodedFunctionName()].targetAddress.call.value(
-                msg.value
-            )(_msgData());
+        (bool success, bytes memory result) = _targets[_encodedFunctionName()]
+            .targetAddress
+            .call
+            .value(msg.value)(_msgData());
+
+        if (!success)
+            assembly {
+                revert(add(result, 32), result)
+            }
+
+        return (success, result);
     }
 }
