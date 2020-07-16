@@ -2,9 +2,9 @@
 
 pragma solidity ^0.5.12;
 
-import "../GSNContext.sol";
+import "../GSNAdapterContext.sol";
 
-contract CounterModuleV1 is GSNContext {
+contract CounterModuleV1 is GSNAdapterContext {
     uint256 private _value;
     address private _sender;
 

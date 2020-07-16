@@ -3,7 +3,6 @@ import {
   CounterModuleV2Instance,
   GSNV1AdapterInstance,
   IRelayHubInstance,
-  GSNContextInstance,
 } from "../types/contracts";
 
 const { expect } = require("chai");
@@ -52,12 +51,18 @@ describe("GSNV1Adapter", async () => {
     gsnV1AdapterInstance = await GSNV1Adapter.new();
 
     counterModuleV1Instance = await CounterModuleV1.new();
-    // @ts-ignore
-    counterModuleV1Instance.initializeContext(gsnV1AdapterInstance.address);
+
+    counterModuleV1Instance.initializeGSNAdapterContext(
+      // @ts-ignore
+      gsnV1AdapterInstance.address,
+    );
 
     counterModuleV2Instance = await CounterModuleV2.new();
-    // @ts-ignore
-    counterModuleV2Instance.initializeContext(gsnV1AdapterInstance.address);
+
+    counterModuleV2Instance.initializeGSNAdapterContext(
+      // @ts-ignore
+      gsnV1AdapterInstance.address,
+    );
 
     irelayHubInstance = await IRelayHub.at(
       "0xD216153c06E857cD7f72665E0aF1d7D82172F494",

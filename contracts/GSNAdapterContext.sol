@@ -13,64 +13,64 @@ import "@openzeppelin/upgrades/contracts/Initializable.sol";
  * information on how to use the pre-built {GSNRecipientSignature} and
  * {GSNRecipientERC20Fee}, or how to write your own.
  */
-contract GSNContext is Initializable {
-    function initializeContext(address RelayHub) public {
-        _upgradeRelayHub(RelayHub);
+contract GSNAdapterContext is Initializable {
+    function initializeGSNAdapterContext(address gsnAdapter) public {
+        _upgradeGSNAdapter(gsnAdapter);
     }
 
-    function setDefaultRelayHub() public {
-        _upgradeRelayHub(address(0));
+    function setDefaultAdapter() public {
+        _upgradeGSNAdapter(address(0));
     }
 
-    // Default RelayHub address, deployed on mainnet and all testnets at the same address
-    address private _relayHub;
+    // Default GSNAdapter address, deployed on mainnet and all testnets at the same address
+    address private _gsnAdapter;
 
     /**
-     * @dev Emitted when a contract changes its {IRelayHub} contract to a new one.
+     * @dev Emitted when a contract changes its {IGSNAdapter} contract to a new one.
      */
-    event RelayHubChanged(
-        address indexed oldRelayHub,
-        address indexed newRelayHub
+    event GSNAdapterChanged(
+        address indexed oldGSNAdapter,
+        address indexed newGSNAdapter
     );
 
     /**
-     * @dev Returns the address of the {IRelayHub} contract for this recipient.
+     * @dev Returns the address of the {IGSNAdapter} contract for this recipient.
      */
-    function getHubAddr() public view returns (address) {
-        return _relayHub;
+    function getGSNAdapterAddr() public view returns (address) {
+        return _gsnAdapter;
     }
 
     /**
-     * @dev Switches to a new {IRelayHub} instance. This method is added for future-proofing: there's no reason to not
+     * @dev Switches to a new {IGSNAdapter} instance. This method is added for future-proofing: there's no reason to not
      * use the default instance.
      *
      * IMPORTANT: After upgrading, the {GSNRecipient} will no longer be able to receive relayed calls from the old
-     * {IRelayHub} instance. Additionally, all funds should be previously withdrawn via {_withdrawDeposits}.
+     * {IGSNAdapter} instance. Additionally, all funds should be previously withdrawn via {_withdrawDeposits}.
      */
-    function _upgradeRelayHub(address newRelayHub) internal {
-        address currentRelayHub = _relayHub;
+    function _upgradeGSNAdapter(address newGSNAdapter) internal {
+        address currentGSNAdapter = _gsnAdapter;
         require(
-            newRelayHub != address(0),
-            "GSNRecipient: new RelayHub is the zero address"
+            newGSNAdapter != address(0),
+            "GSNAdapterContext: new GSNAdapter is the zero address"
         );
         require(
-            newRelayHub != currentRelayHub,
-            "GSNRecipient: new RelayHub is the current one"
+            newGSNAdapter != currentGSNAdapter,
+            "GSNAdapterContext: new GSNAdapter is the current one"
         );
 
-        emit RelayHubChanged(currentRelayHub, newRelayHub);
+        emit GSNAdapterChanged(currentGSNAdapter, newGSNAdapter);
 
-        _relayHub = newRelayHub;
+        _gsnAdapter = newGSNAdapter;
     }
 
     /**
      * @dev Replacement for msg.sender. Returns the actual sender of a transaction: msg.sender for regular transactions,
-     * and the end-user for GSN relayed calls (where msg.sender is actually `RelayHub`).
+     * and the end-user for GSN relayed calls (where msg.sender is actually `GSNAdapter`).
      *
      * IMPORTANT: Contracts derived from {GSNRecipient} should never use `msg.sender`, and use {_msgSender} instead.
      */
     function _msgSender() internal view returns (address payable) {
-        if (msg.sender != _relayHub) {
+        if (msg.sender != _gsnAdapter) {
             return msg.sender;
         } else {
             return _getRelayedCallSender();
@@ -84,7 +84,7 @@ contract GSNContext is Initializable {
      * IMPORTANT: Contracts derived from {GSNRecipient} should never use `msg.data`, and use {_msgData} instead.
      */
     function _msgData() internal view returns (bytes memory) {
-        if (msg.sender != _relayHub) {
+        if (msg.sender != _gsnAdapter) {
             return msg.data;
         } else {
             return _getRelayedCallData();
@@ -121,7 +121,7 @@ contract GSNContext is Initializable {
     }
 
     function _getRelayedCallData() private pure returns (bytes memory) {
-        // RelayHub appends the sender address at the end of the calldata, so in order to retrieve the actual msg.data,
+        // GSNAdapter appends the sender address at the end of the calldata, so in order to retrieve the actual msg.data,
         // we must strip the last 20 bytes (length of an address type) from it.
 
         uint256 actualDataLength = msg.data.length - 20;
