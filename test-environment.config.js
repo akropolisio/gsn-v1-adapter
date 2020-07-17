@@ -14,7 +14,7 @@ module.exports = {
     return new GSNDevProvider(baseProvider, {
       txfee: 70,
       useGSN: false,
-      ownerAddress: accounts[8],
+      ownerAddress: accounts[0],
       relayerAddress: accounts[9],
       approveFunction: utils.makeApproveFunction(async (data) => {
         const sig = await web3.eth.sign(data, accounts[1]);

@@ -4,7 +4,7 @@ pragma solidity ^0.5.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipientSignature.sol";
 
-// import "@openzeppelin/contracts-ethereum-package/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 
 /**
  * @title GSNV1Adapter
@@ -18,14 +18,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipientSigna
  *
  * @notice 0xb373a41f == bytes4(keccak256(bytes("GSNV1Adapter")))
  */
-contract GSNV1Adapter is GSNRecipientSignature {
-    // bytes32 private constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-
-    // modifier onlyManager() {
-    //     require(hasRole(MANAGER_ROLE, _msgSender()), "Caller is not a manager");
-    //     _;
-    // }
-
+contract GSNV1Adapter is Ownable, GSNRecipientSignature {
     struct Target {
         string targetName;
         address targetAddress;
@@ -34,35 +27,22 @@ contract GSNV1Adapter is GSNRecipientSignature {
     mapping(bytes4 => Target) private _targets;
 
     /**
-     * @dev Sets the values for {trustedSigner} and {admin}.
+     * @dev Sets the value for {trustedSigner}.
      *
-     * All two of these values are immutable: they can only be set once during
+     * This value are immutable: it can only be set once during
      * initialization.
      *
      * @param trustedSigner Address of the trusted signer.
      *
-     * @param admin Address of the admin.
      */
-    function initilize__0xb373a41f(address trustedSigner, address admin)
-        public
-        initializer
-    {
-        (admin);
-        // _setupRole(DEFAULT_ADMIN_ROLE, admin);
-        // _setupRole(MANAGER_ROLE, admin);
+    function initilize__0xb373a41f(address trustedSigner) public initializer {
         GSNRecipientSignature.initialize(trustedSigner);
+        Ownable.initialize(msg.sender);
     }
 
     function() external payable {
         _delegate();
     }
-
-    // /**
-    //  * @dev Returns hash of the manager role.
-    //  */
-    // function getManagerRole__0xb373a41f() external pure returns (bytes32) {
-    //     return MANAGER_ROLE;
-    // }
 
     /**
      * @dev Returns name of the target.
@@ -111,7 +91,7 @@ contract GSNV1Adapter is GSNRecipientSignature {
         bytes4 encodedFunction,
         string calldata targetName,
         address targetAddress
-    ) external returns (bool) {
+    ) external onlyOwner returns (bool) {
         _targets[encodedFunction] = Target({
             targetName: targetName,
             targetAddress: targetAddress
@@ -141,6 +121,7 @@ contract GSNV1Adapter is GSNRecipientSignature {
      */
     function withdraw__0xb373a41f(uint256 amount, address payable payee)
         external
+        onlyOwner
         returns (bool)
     {
         _withdrawDeposits(amount, payee);

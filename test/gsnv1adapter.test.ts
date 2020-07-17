@@ -92,7 +92,7 @@ describe("GSNV1Adapter", async () => {
       irelayHubInstance.address,
     );
 
-    await gsnV1AdapterInstance.initilize__0xb373a41f(forwarder, owner, {
+    await gsnV1AdapterInstance.initilize__0xb373a41f(forwarder, {
       from: owner,
     });
 
