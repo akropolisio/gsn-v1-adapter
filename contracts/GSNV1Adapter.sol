@@ -31,7 +31,7 @@ contract GSNV1Adapter is GSNRecipientSignature {
         address targetAddress;
     }
 
-    mapping(bytes => Target) private _targets;
+    mapping(bytes4 => Target) private _targets;
 
     /**
      * @dev Sets the values for {trustedSigner} and {admin}.
@@ -71,7 +71,7 @@ contract GSNV1Adapter is GSNRecipientSignature {
      *
      * @return String name of the target.
      */
-    function getTargetName__0xb373a41f(bytes calldata encodedFunction)
+    function getTargetName__0xb373a41f(bytes4 encodedFunction)
         external
         view
         returns (string memory)
@@ -86,7 +86,7 @@ contract GSNV1Adapter is GSNRecipientSignature {
      *
      * @return Address of the target.
      */
-    function getTargetAddress__0xb373a41f(bytes calldata encodedFunction)
+    function getTargetAddress__0xb373a41f(bytes4 encodedFunction)
         external
         view
         returns (address)
@@ -108,7 +108,7 @@ contract GSNV1Adapter is GSNRecipientSignature {
      * @return Boolean value indicating whether the operation succeeded.
      */
     function setTarget__0xb373a41f(
-        bytes calldata encodedFunction,
+        bytes4 encodedFunction,
         string calldata targetName,
         address targetAddress
     ) external returns (bool) {
@@ -172,18 +172,8 @@ contract GSNV1Adapter is GSNRecipientSignature {
         }
     }
 
-    function _encodedFunctionName() private view returns (bytes memory) {
-        bytes memory actualData = new bytes(4);
-
-        for (uint256 i = 0; i < 4; ++i) {
-            actualData[i] = _msgData()[i];
-        }
-
-        return actualData;
-    }
-
     function _delegate() private returns (bool, bytes memory) {
-        (bool success, bytes memory result) = _targets[_encodedFunctionName()]
+        (bool success, bytes memory result) = _targets[msg.sig]
             .targetAddress
             .call
             .value(msg.value)(_msgData());
